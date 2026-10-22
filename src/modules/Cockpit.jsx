@@ -69,7 +69,8 @@ export default function Cockpit() {
     const majorRisks = open.filter((r) => r.g * r.p > 15);
     const mileDone = miles.rows.filter((m) => m.statut === 'Terminé').length;
     const lateMiles = miles.rows.filter((m) => effStatus(m) === 'En alerte retard');
-    const collected = budget.rows.filter((x) => x.kind === 'collected').reduce((s, x) => s + Number(x.montant), 0);
+    const collected = budget.rows.filter((x) => x.kind === 'collected').reduce((s, x) => s + Number(x.montant), 0)
+      + sponsors.rows.reduce((s, x) => s + Number(x.valeur), 0);
     const spent = budget.rows.filter((x) => x.kind === 'expense').reduce((s, x) => s + Number(x.montant), 0);
     const carA = carTotals(inv.rows, 'Voiture A'), carB = carTotals(inv.rows, 'Voiture B');
     const massAlerts = [['Voiture A', carA], ['Voiture B', carB]]
@@ -78,7 +79,7 @@ export default function Cockpit() {
     const missing = inv.rows.filter((p) => p.ctrl === 'Manquant');
     const delivered = dels.rows.filter((l) => l.done).length;
     return { riskIndex, majorRisks, mileDone, lateMiles, collected, spent, carA, carB, massAlerts, missing, delivered, dueTotal: dels.rows.length };
-  }, [risks.rows, miles.rows, budget.rows, inv.rows, dels.rows]);
+  }, [risks.rows, miles.rows, budget.rows, inv.rows, dels.rows, sponsors.rows]);
 
   const milePct = pct(d.mileDone, miles.rows.length), budgetPct = pct(d.spent, d.collected), sponsorPct = pct(d.delivered, d.dueTotal);
 

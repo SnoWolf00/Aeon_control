@@ -3,15 +3,18 @@ import { useAuth } from './auth';
 import { Login, SetPassword } from './Login';
 import { Icon, Badge, Card } from './ui';
 import Risks from './modules/Risks';
+import Decisions from './modules/Decisions';
+import Inventory from './modules/Inventory';
+import Planning from './modules/Planning';
 
 const TABS = [
   { id: 'cockpit', label: 'Cockpit', icon: 'dash', lot: 3 },
   { id: 'risks', label: 'Matrice des risques', icon: 'alert', C: Risks },
-  { id: 'decisions', label: 'Decision Log', icon: 'book', lot: 2 },
-  { id: 'inventory', label: 'Pitlane & Spares', icon: 'flag', lot: 2 },
+  { id: 'decisions', label: 'Decision Log', icon: 'book', C: Decisions },
+  { id: 'inventory', label: 'Pitlane & Spares', icon: 'flag', C: Inventory },
   { id: 'sponsors', label: 'Sponsors', icon: 'award', lot: 3 },
   { id: 'skills', label: 'Compétences', icon: 'layers', lot: 3 },
-  { id: 'planning', label: 'Jalons & Planning', icon: 'clock', lot: 2 },
+  { id: 'planning', label: 'Jalons & Planning', icon: 'clock', C: Planning },
   { id: 'budget', label: 'Budget', icon: 'coins', lot: 3 },
 ];
 const ROLE_LABEL = { manager: 'Team Manager', lead: 'Lead', member: 'Membre', viewer: 'Lecture seule' };

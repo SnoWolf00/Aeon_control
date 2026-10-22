@@ -6,16 +6,20 @@ import Risks from './modules/Risks';
 import Decisions from './modules/Decisions';
 import Inventory from './modules/Inventory';
 import Planning from './modules/Planning';
+import Cockpit from './modules/Cockpit';
+import Sponsors from './modules/Sponsors';
+import Skills from './modules/Skills';
+import Budget from './modules/Budget';
 
 const TABS = [
-  { id: 'cockpit', label: 'Cockpit', icon: 'dash', lot: 3 },
+  { id: 'cockpit', label: 'Cockpit', icon: 'dash', C: Cockpit },
   { id: 'risks', label: 'Matrice des risques', icon: 'alert', C: Risks },
   { id: 'decisions', label: 'Decision Log', icon: 'book', C: Decisions },
   { id: 'inventory', label: 'Pitlane & Spares', icon: 'flag', C: Inventory },
-  { id: 'sponsors', label: 'Sponsors', icon: 'award', lot: 3 },
-  { id: 'skills', label: 'Compétences', icon: 'layers', lot: 3 },
+  { id: 'sponsors', label: 'Sponsors', icon: 'award', C: Sponsors },
+  { id: 'skills', label: 'Compétences', icon: 'layers', C: Skills },
   { id: 'planning', label: 'Jalons & Planning', icon: 'clock', C: Planning },
-  { id: 'budget', label: 'Budget', icon: 'coins', lot: 3 },
+  { id: 'budget', label: 'Budget', icon: 'coins', C: Budget },
 ];
 const ROLE_LABEL = { manager: 'Team Manager', lead: 'Lead', member: 'Membre', viewer: 'Lecture seule' };
 
@@ -25,7 +29,7 @@ function Soon({ lot }) {
 
 export default function App() {
   const { session, needPassword, me, role, signOut } = useAuth();
-  const [tab, setTab] = useState('risks');
+  const [tab, setTab] = useState('cockpit');
 
   if (session === undefined) return <div className="p-8 text-slate-400">Chargement…</div>;
   if (needPassword) return <SetPassword />;

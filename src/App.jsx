@@ -10,6 +10,7 @@ import Cockpit from './modules/Cockpit';
 import Sponsors from './modules/Sponsors';
 import Skills from './modules/Skills';
 import Budget from './modules/Budget';
+import Team from './modules/Team';
 
 const TABS = [
   { id: 'cockpit', label: 'Cockpit', icon: 'dash', C: Cockpit },
@@ -45,7 +46,8 @@ export default function App() {
     </div>
   );
 
-  const cur = TABS.find((t) => t.id === tab);
+  const tabs = role === 'manager' ? [...TABS, { id: 'team', label: 'Équipe', icon: 'users', C: Team }] : TABS;
+  const cur = tabs.find((t) => t.id === tab) || tabs[0];
   const View = cur.C;
 
   return (
@@ -56,7 +58,7 @@ export default function App() {
           <div className="text-xs text-slate-400 mt-1">Mission Control</div>
         </div>
         <nav className="space-y-1">
-          {TABS.map((t) => (
+          {tabs.map((t) => (
             <button key={t.id} onClick={() => setTab(t.id)} aria-current={tab === t.id ? 'page' : undefined}
               className={'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-left border ' + (tab === t.id ? 'bg-race/15 text-race border-race/40' : 'text-slate-300 border-transparent hover:bg-c2')}>
               <Icon n={t.icon} size={18} />{t.label}
@@ -76,7 +78,7 @@ export default function App() {
             <button onClick={signOut} className="text-xs text-slate-400">Déconnexion</button>
           </div>
           <nav className="flex gap-1.5 overflow-x-auto scroll-x px-3 pb-2.5">
-            {TABS.map((t) => (
+            {tabs.map((t) => (
               <button key={t.id} onClick={() => setTab(t.id)}
                 className={'shrink-0 flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border ' + (tab === t.id ? 'bg-race/15 text-race border-race/40' : 'text-slate-300 border-line')}>
                 <Icon n={t.icon} size={16} />{t.label}

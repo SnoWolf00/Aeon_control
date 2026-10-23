@@ -3,6 +3,7 @@ import { supabase } from '../supabase';
 import { useAuth } from '../auth';
 import { Card, Title, Field, Badge, inp, btnP, btnG } from '../ui';
 import { rpc } from '../demo';
+import { TEAM_POLES } from '../lib';
 
 const ROLES = { manager: 'Team Manager', lead: 'Lead', member: 'Membre', viewer: 'Lecture seule' };
 const INVITABLE = ['lead', 'member', 'viewer'];
@@ -66,8 +67,8 @@ export default function Team() {
       </Card>
 
       <Card className="overflow-hidden">
-        <table className="w-full text-sm">
-          <thead><tr className="text-left text-xs text-slate-400 border-b border-line bg-c2"><th className="px-4 py-3 font-semibold">Nom</th><th className="px-4 py-3 font-semibold">Rôle</th></tr></thead>
+        <div className="overflow-x-auto"><table className="w-full text-sm min-w-[620px]">
+          <thead><tr className="text-left text-xs text-slate-400 border-b border-line bg-c2"><th className="px-4 py-3 font-semibold">Nom</th><th className="px-4 py-3 font-semibold">Rôle</th><th className="px-4 py-3 font-semibold">Pôle</th></tr></thead>
           <tbody>
             {profiles.map((p) => {
               const self = p.id === session.user.id;
@@ -84,11 +85,17 @@ export default function Team() {
                           {INVITABLE.map((r) => <option key={r} value={r}>{ROLES[r]}</option>)}
                         </select>}
                   </td>
+                  <td className="px-4 py-2.5">
+                    <select className="bg-bg0 border border-line rounded-md px-2 py-1.5 text-sm text-slate-200" value={p.pole ?? ''} onChange={(e) => update(p.id, { pole: e.target.value || null })} aria-label={'Pôle de ' + p.name}>
+                      <option value="">Non défini</option>
+                      {Object.entries(TEAM_POLES).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
+                    </select>
+                  </td>
                 </tr>
               );
             })}
           </tbody>
-        </table>
+        </table></div>
       </Card>
 
       <Card className="p-5 mt-4">

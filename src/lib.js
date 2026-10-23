@@ -12,3 +12,11 @@ export function carTotals(rows, group) {
 
 export const effStatus = (m) =>
   m.statut === 'Terminé' ? 'Terminé' : new Date(m.end_date) < today0() ? 'En alerte retard' : m.statut;
+
+export const TEAM_POLES = {
+  direction: 'Direction',
+  conception: 'Conception',
+  fabrication: 'Fabrication',
+  communication: 'Communication & sponsors',
+  finances: 'Finances & ressources',
+};

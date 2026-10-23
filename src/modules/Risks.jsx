@@ -3,13 +3,14 @@ import { supabase } from '../supabase';
 import { useTable } from '../useTable';
 import { useAuth } from '../auth';
 import { Card, Title, Field, Icon, inp, btnP, btnG, crit } from '../ui';
+import { TEAM_POLES } from '../lib';
 
 const POLES = ['CAO / Simulation', 'Usinage', 'Assemblage', 'Logistique', 'Partenariats', 'Communication', 'Finance'];
 const ORDER = { col: 'created_at', asc: true };
 
 export default function Risks() {
   const { rows, loading, error } = useTable('risks', ORDER);
-  const { profiles, session, canWrite, isLead, nameOf, logActivity } = useAuth();
+  const { profiles, session, canWrite, isLead, nameOf, poleOf, me, logActivity } = useAuth();
   const [filter, setFilter] = useState('Tous');
   const [open, setOpen] = useState(false);
   const [err, setErr] = useState(null);
@@ -17,8 +18,8 @@ export default function Risks() {
   const [f, setF] = useState(blank);
 
   const list = useMemo(
-    () => rows.map((r) => ({ ...r, c: r.g * r.p })).filter((r) => filter === 'Tous' || r.c > 15).sort((a, b) => b.c - a.c),
-    [rows, filter]
+    () => rows.map((r) => ({ ...r, c: r.g * r.p })).filter((r) => filter === 'Tous' || (filter === 'Majeurs' ? r.c > 15 : !!me?.pole && poleOf(r.responsable) === me.pole)).sort((a, b) => b.c - a.c),
+    [rows, filter, profiles, me?.pole]
   );
 
   const run = async (q) => { const { error } = await q; setErr(error ? error.message : null); return !error; };
@@ -46,7 +47,7 @@ export default function Risks() {
     <div>
       <Title icon="alert" title="Matrice des risques (AMDEC)" sub="Chaque panne ou crise anticipée a un plan B, un responsable et un statut. Criticité = gravité × probabilité. Les modifications apparaissent en direct chez tous les membres.">
         <div className="flex rounded-md border border-line overflow-hidden">
-          {[['Tous', 'Tous'], ['Majeurs', 'Risques majeurs']].map(([k, l]) => (
+          {[['Tous', 'Tous'], ['Majeurs', 'Risques majeurs'], ...(me?.pole ? [['Pole', 'Mon pôle']] : [])].map(([k, l]) => (
             <button key={k} onClick={() => setFilter(k)} className={'px-3 py-2 text-sm font-medium ' + (filter === k ? 'bg-race text-black' : 'text-slate-300 hover:bg-c2')}>{l}</button>
           ))}
         </div>
@@ -89,7 +90,7 @@ export default function Risks() {
                     <td className="px-4 py-3">{score(r, 'p')}</td>
                     <td className="px-4 py-3"><span className={'inline-flex items-center gap-2 rounded-md border px-2.5 py-1 font-display text-lg font-semibold ' + k.bg + ' ' + k.t}>{r.c}<span className="text-xs font-sans font-semibold">{k.l}</span></span></td>
                     <td className="px-4 py-3 text-slate-300 max-w-[320px]">{r.plan_b}</td>
-                    <td className="px-4 py-3 text-slate-300 whitespace-nowrap">{nameOf(r.responsable)}</td>
+                    <td className="px-4 py-3 text-slate-300 whitespace-nowrap">{nameOf(r.responsable)}{poleOf(r.responsable) && <div className="text-xs text-slate-500">{TEAM_POLES[poleOf(r.responsable)]}</div>}</td>
                     <td className="px-4 py-3">
                       <select disabled={!canWrite} value={r.statut} onChange={(e) => setStatut(r, e.target.value)}
                         className={'rounded-md border px-2 py-1.5 text-xs font-semibold bg-bg0 ' + (r.statut === 'Prêt' ? 'text-ok border-ok/40' : r.statut === 'Déclenché' ? 'text-race border-race/40' : 'text-slate-400 border-line')}>
@@ -101,7 +102,7 @@ export default function Risks() {
                 );
               })}
               {!loading && list.length === 0 && (
-                <tr><td colSpan="9" className="px-4 py-8 text-center text-slate-400">{filter === 'Tous' ? 'Aucun risque enregistré. Ajoutez le premier avec « Ajouter un risque ».' : 'Aucun risque majeur (criticité supérieure à 15).'}</td></tr>
+                <tr><td colSpan="9" className="px-4 py-8 text-center text-slate-400">{filter === 'Tous' ? 'Aucun risque enregistré. Ajoutez le premier avec « Ajouter un risque ».' : filter === 'Majeurs' ? 'Aucun risque majeur (criticité supérieure à 15).' : 'Aucun risque n’est confié à un membre de votre pôle.'}</td></tr>
               )}
             </tbody>
           </table>

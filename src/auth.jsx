@@ -45,6 +45,7 @@ export function AuthProvider({ children }) {
     canWrite: ['manager', 'lead', 'member'].includes(role),
     isLead: ['manager', 'lead'].includes(role),
     nameOf: (id) => profiles.find((p) => p.id === id)?.name ?? '—',
+    poleOf: (id) => profiles.find((p) => p.id === id)?.pole ?? null,
     logActivity: (type, txt) => supabase.from('activity').insert({ type, txt }),
     updateFinale: async (finale) => {
       const { error } = await supabase.from('teams').update({ finale }).eq('id', team.id);

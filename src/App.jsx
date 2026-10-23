@@ -11,6 +11,7 @@ import Sponsors from './modules/Sponsors';
 import Skills from './modules/Skills';
 import Budget from './modules/Budget';
 import Team from './modules/Team';
+import { TEAM_POLES } from './lib';
 
 const TABS = [
   { id: 'cockpit', label: 'Cockpit', icon: 'dash', C: Cockpit },
@@ -67,7 +68,7 @@ export default function App() {
         </nav>
         <div className="mt-auto px-2 space-y-2">
           <div className="text-sm text-white">{me?.name ?? session.user.email}</div>
-          <Badge tone={role === 'manager' ? 'race' : 'slate'}>{ROLE_LABEL[role]}</Badge>
+          <div className="flex flex-wrap gap-1.5"><Badge tone={role === 'manager' ? 'race' : 'slate'}>{ROLE_LABEL[role]}</Badge>{me?.pole && <Badge tone="cyan">{TEAM_POLES[me.pole]}</Badge>}</div>
           <button onClick={signOut} className="flex items-center gap-2 text-xs text-slate-400 hover:text-white"><Icon n="logout" size={14} />Se déconnecter</button>
         </div>
       </aside>

@@ -1,17 +1,30 @@
 import { useState } from 'react';
 import { supabase } from '../supabase';
 import { useAuth } from '../auth';
-import { Card, Title, Field, Badge, inp, btnP } from '../ui';
+import { Card, Title, Field, Badge, inp, btnP, btnG } from '../ui';
+import { rpc } from '../demo';
 
 const ROLES = { manager: 'Team Manager', lead: 'Lead', member: 'Membre', viewer: 'Lecture seule' };
 const INVITABLE = ['lead', 'member', 'viewer'];
 
 export default function Team() {
-  const { profiles, session, team, reloadProfiles } = useAuth();
+  const { profiles, session, team, reloadProfiles, reloadTeam } = useAuth();
   const [f, setF] = useState({ email: '', name: '', role: 'member' });
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState(null); // { ok, text }
   const [err, setErr] = useState(null);
+  const [confirm, setConfirm] = useState('');
+  const [dataMsg, setDataMsg] = useState(null);
+  const [dataBusy, setDataBusy] = useState(false);
+
+  const runData = async (fn, okText) => {
+    setDataBusy(true); setDataMsg(null);
+    const e = await rpc(fn);
+    await reloadTeam();
+    setDataMsg(e ? { ok: false, text: e } : { ok: true, text: okText });
+    if (!e) setConfirm('');
+    setDataBusy(false);
+  };
 
   const invite = async (e) => {
     e.preventDefault();
@@ -76,6 +89,25 @@ export default function Team() {
             })}
           </tbody>
         </table>
+      </Card>
+
+      <Card className="p-5 mt-4">
+        <h3 className="font-display text-xl font-semibold text-white mb-1">Données de l’équipe</h3>
+        <p className="text-sm text-slate-400 mb-4">Chargez un exemple complet pour découvrir l’outil, ou repartez de zéro.</p>
+        <div className="flex flex-wrap items-center gap-3">
+          <button className={btnG} disabled={dataBusy} onClick={() => runData('load_demo_data', 'Exemple chargé.')}>Charger un exemple</button>
+          <span className="text-xs text-slate-500">Possible uniquement si l’équipe n’a aucune donnée.</span>
+        </div>
+        <div className="mt-5 pt-4 border-t border-line">
+          <div className="text-sm text-slate-200">Effacer toutes les données de l’équipe</div>
+          <p className="text-xs text-slate-500 mt-1">Supprime risques, décisions, pièces, sponsors, compétences, jalons, budget et activité. Les comptes et la date de finale sont conservés. Action définitive.</p>
+          <div className="flex flex-wrap gap-2 mt-3">
+            <input className={inp + ' max-w-[16rem]'} placeholder="Tapez EFFACER pour confirmer" value={confirm} onChange={(e) => setConfirm(e.target.value)} aria-label="Confirmation" />
+            <button className="inline-flex items-center rounded-md px-3.5 py-2 text-sm font-semibold bg-alert text-white hover:bg-red-400 disabled:opacity-40" disabled={confirm !== 'EFFACER' || dataBusy}
+              onClick={() => runData('clear_team_data', 'Données effacées.')}>Tout effacer</button>
+          </div>
+        </div>
+        {dataMsg && <p className={'text-sm mt-3 ' + (dataMsg.ok ? 'text-ok' : 'text-race')}>{dataMsg.text}</p>}
       </Card>
     </div>
   );

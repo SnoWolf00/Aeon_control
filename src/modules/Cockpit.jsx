@@ -3,6 +3,7 @@ import { useTable } from '../useTable';
 import { useAuth } from '../auth';
 import { Card, Title, Field, Bar, Modal, TextExport, Icon, inp, btnP, eur, pct, ago, fdate, gr } from '../ui';
 import { carTotals, effStatus, MIN_MASS } from '../lib';
+import { rpc } from '../demo';
 
 const TYPE_ICON = { decision: 'book', sponsor: 'award', risk: 'alert', milestone: 'flag', budget: 'coins', inv: 'scale', skill: 'layers' };
 const riskTone = (c) => (c > 15 ? 'bg-alert' : c >= 8 ? 'bg-race' : 'bg-ok');
@@ -54,9 +55,15 @@ export default function Cockpit() {
   const decisions = useTable('decisions', { col: 'date', asc: false });
   const skills = useTable('skills');
   const act = useTable('activity', { col: 'created_at', asc: false }, 8);
-  const { isLead, nameOf, team, updateFinale } = useAuth();
+  const { isLead, nameOf, team, updateFinale, role, reloadTeam } = useAuth();
   const [exp, setExp] = useState(false);
   const [fmt, setFmt] = useState('md');
+  const [demoBusy, setDemoBusy] = useState(false);
+  const [demoErr, setDemoErr] = useState(null);
+  const isEmpty = [risks, miles, budget, inv, sponsors, decisions, skills].every((t) => !t.loading && t.rows.length === 0);
+  const loadDemo = async () => {
+    setDemoBusy(true); setDemoErr(await rpc('load_demo_data')); await reloadTeam(); setDemoBusy(false);
+  };
 
   const finale = team?.finale || '2027-03-12';
   const saveFinale = (value) => updateFinale(value);
@@ -106,6 +113,14 @@ export default function Cockpit() {
       <Title icon="dash" title="Cockpit · Mission Control" sub="Vue d’ensemble en temps réel, alimentée par les autres modules.">
         <button className={btnP} onClick={() => setExp(true)}><Icon n="download" size={16} />Exporter synthèse Portfolio (MD/JSON)</button>
       </Title>
+      {isEmpty && role === 'manager' && (
+        <Card className="p-5 mb-4 border-race/40">
+          <h3 className="font-display text-2xl font-semibold text-white">Bienvenue dans votre Mission Control</h3>
+          <p className="text-sm text-slate-300 mt-1.5 max-w-2xl">Votre espace est vide. Chargez un exemple complet (risques, décisions, pesées, sponsors, jalons, budget) pour voir comment tout s’articule, puis modifiez-le ou effacez-le depuis l’onglet Équipe.</p>
+          {demoErr && <p className="text-sm text-race mt-2">{demoErr}</p>}
+          <button className={btnP + ' mt-3'} onClick={loadDemo} disabled={demoBusy}>{demoBusy ? 'Chargement…' : 'Charger un exemple'}</button>
+        </Card>
+      )}
       <Countdown finale={finale} canEdit={isLead} onChange={saveFinale} />
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mt-4">

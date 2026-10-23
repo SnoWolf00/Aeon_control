@@ -5,10 +5,8 @@ import { useAuth } from '../auth';
 import { Card, Title, Field, Badge, Icon, inp, btnP, btnG, fdate, today0 } from '../ui';
 
 const ORDER = { col: 'end_date', asc: true };
-const R0 = new Date('2026-09-01'), R1 = new Date('2027-03-31');
 const COLORS = { 'Terminé': 'bg-ok', 'En cours': 'bg-cyan', 'En alerte retard': 'bg-alert', 'À venir': 'bg-slate-500' };
 const effStatus = (m) => (m.statut === 'Terminé' ? 'Terminé' : new Date(m.end_date) < today0() ? 'En alerte retard' : m.statut);
-const at = (d) => Math.min(100, Math.max(0, ((new Date(d) - R0) / (R1 - R0)) * 100));
 
 export default function Planning() {
   const { rows, loading, error } = useTable('milestones', ORDER);
@@ -18,6 +16,11 @@ export default function Planning() {
   const [f, setF] = useState({ name: '', start_date: '', end_date: '' });
 
   const finale = team?.finale || '2027-03-12';
+  // La frise s'adapte aux dates saisies : elle couvre n'importe quelle saison.
+  const allDates = [...rows.flatMap((m) => [m.start_date, m.end_date]), finale, new Date()].map((d) => new Date(d));
+  const R0 = new Date(Math.min(...allDates)); R0.setDate(1); R0.setHours(0, 0, 0, 0);
+  const R1 = new Date(Math.max(...allDates)); R1.setMonth(R1.getMonth() + 1, 0);
+  const at = (d) => Math.min(100, Math.max(0, ((new Date(d) - R0) / (R1 - R0)) * 100));
   const months = []; for (let d = new Date(R0); d <= R1; d.setMonth(d.getMonth() + 1)) months.push(new Date(d));
   const todayPct = at(new Date());
 

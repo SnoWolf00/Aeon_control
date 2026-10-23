@@ -51,6 +51,7 @@ export function AuthProvider({ children }) {
       if (!error) setTeam({ ...team, finale });
       return error;
     },
+    reloadTeam: async () => { const { data } = await supabase.from('teams').select('*').maybeSingle(); setTeam(data || null); },
     reloadProfiles: async () => { const { data } = await supabase.from('profiles').select('*'); setProfiles(data || []); },
     signOut: () => supabase.auth.signOut(),
   };

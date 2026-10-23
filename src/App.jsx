@@ -28,12 +28,22 @@ function Soon({ lot }) {
 }
 
 export default function App() {
-  const { session, needPassword, me, role, signOut } = useAuth();
+  const { session, needPassword, me, role, team, ready, signOut } = useAuth();
   const [tab, setTab] = useState('cockpit');
 
   if (session === undefined) return <div className="p-8 text-slate-400">Chargement…</div>;
   if (needPassword) return <SetPassword />;
   if (!session) return <Login />;
+  if (!ready) return <div className="p-8 text-slate-400">Chargement…</div>;
+  if (!me?.team_id) return (
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <Card className="w-full max-w-md p-6 text-center">
+        <div className="font-display text-2xl font-bold text-white">Compte non rattaché</div>
+        <p className="text-sm text-slate-400 mt-2">Votre compte n’est associé à aucune équipe pour le moment. Contactez la personne qui vous a invité pour qu’elle l’active.</p>
+        <button onClick={signOut} className="mt-4 text-sm text-slate-300 underline">Se déconnecter</button>
+      </Card>
+    </div>
+  );
 
   const cur = TABS.find((t) => t.id === tab);
   const View = cur.C;
@@ -42,7 +52,7 @@ export default function App() {
     <div className="min-h-screen lg:flex">
       <aside className="hidden lg:flex flex-col w-64 shrink-0 border-r border-line bg-c1 p-4 sticky top-0 h-screen">
         <div className="px-2 pt-2 pb-5">
-          <div className="font-display text-2xl font-bold text-white leading-none">Aeon Velocity</div>
+          <div className="font-display text-2xl font-bold text-white leading-none">{team?.name}</div>
           <div className="text-xs text-slate-400 mt-1">Mission Control</div>
         </div>
         <nav className="space-y-1">
@@ -62,7 +72,7 @@ export default function App() {
       <div className="flex-1 min-w-0">
         <header className="lg:hidden sticky top-0 z-30 bg-c1/95 backdrop-blur border-b border-line" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
           <div className="px-4 pt-3 pb-2 flex items-center justify-between">
-            <div className="font-display text-xl font-bold text-white leading-none">Aeon Velocity</div>
+            <div className="font-display text-xl font-bold text-white leading-none">{team?.name}</div>
             <button onClick={signOut} className="text-xs text-slate-400">Déconnexion</button>
           </div>
           <nav className="flex gap-1.5 overflow-x-auto scroll-x px-3 pb-2.5">

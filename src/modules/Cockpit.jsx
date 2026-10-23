@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import { supabase } from '../supabase';
 import { useTable } from '../useTable';
 import { useAuth } from '../auth';
 import { Card, Title, Field, Bar, Modal, TextExport, Icon, inp, btnP, eur, pct, ago, fdate, gr } from '../ui';
@@ -54,14 +53,13 @@ export default function Cockpit() {
   const sponsors = useTable('sponsors');
   const decisions = useTable('decisions', { col: 'date', asc: false });
   const skills = useTable('skills');
-  const settings = useTable('settings');
   const act = useTable('activity', { col: 'created_at', asc: false }, 8);
-  const { isLead, nameOf } = useAuth();
+  const { isLead, nameOf, team, updateFinale } = useAuth();
   const [exp, setExp] = useState(false);
   const [fmt, setFmt] = useState('md');
 
-  const finale = settings.rows.find((s) => s.key === 'finale')?.value || '2027-03-12';
-  const saveFinale = (value) => supabase.from('settings').upsert({ key: 'finale', value });
+  const finale = team?.finale || '2027-03-12';
+  const saveFinale = (value) => updateFinale(value);
 
   const d = useMemo(() => {
     const open = risks.rows.filter((r) => r.statut !== 'Clôturé');
@@ -91,7 +89,7 @@ export default function Cockpit() {
   ];
 
   const snapshot = () => ({
-    equipe: 'Aeon Velocity', genere_le: new Date().toISOString(), finale,
+    equipe: team?.name, genere_le: new Date().toISOString(), finale,
     indicateurs: { jalons_pct: milePct, budget_consomme_pct: budgetPct, indice_risque_global: d.riskIndex, marge_masse_voiture_A_g: d.carA.margin, contreparties_livrees_pct: sponsorPct },
     risques: risks.rows.map((r) => ({ ...r, criticite: r.g * r.p })), decisions: decisions.rows, inventaire: inv.rows,
     sponsors: sponsors.rows.map((s) => ({ ...s, livrables: dels.rows.filter((l) => l.sponsor_id === s.id) })),
@@ -100,7 +98,7 @@ export default function Cockpit() {
   });
   const toMD = () => {
     const s = snapshot();
-    return `# Synthèse Portfolio · Aeon Velocity\nGénéré le ${fdate(new Date())}\n\n## Indicateurs clés\n- Jalons complétés : ${milePct} % (${d.mileDone}/${miles.rows.length})\n- Budget consommé : ${budgetPct} % (${eur(d.spent)} / ${eur(d.collected)})\n- Indice de risque global : ${d.riskIndex} / 25\n- Masse voiture A : ${gr(d.carA.total)} (marge ${d.carA.margin.toFixed(2)} g, minimum ${gr(MIN_MASS)})\n- Contreparties sponsors livrées : ${sponsorPct} %\n\n## Matrice des risques (AMDEC)\n| Risque | Pôle | G | P | Criticité | Plan B | Statut |\n|---|---|---|---|---|---|---|\n${s.risques.map((r) => `| ${r.risque} | ${r.pole} | ${r.g} | ${r.p} | ${r.criticite} | ${r.plan_b ?? ''} | ${r.statut} |`).join('\n')}\n\n## Journal d’arbitrage R&D\n${decisions.rows.map((x) => `### ${x.titre} (${fdate(x.date)}, validé par ${x.valide_par})\n- Problème : ${x.probleme}\n- Options : ${(x.options || []).join(' / ')}\n- Décision : **${x.decision}**. ${x.justif}\n- Δ traînée : ${x.delta_cx} · Δ masse : ${x.masse} · Δ coût : ${x.cout}`).join('\n\n')}\n\n## Sponsors\n${s.sponsors.map((x) => `- ${x.nom} (${x.role}) : ${pct(x.livrables.filter((l) => l.done).length, x.livrables.length)} % livré`).join('\n')}\n\n## Jalons\n${s.jalons.map((m) => `- ${m.name} : ${fdate(m.start_date)} → ${fdate(m.end_date)} · ${m.statut_effectif}`).join('\n')}\n\n## Budget\n- Collecté : ${eur(d.collected)} · Engagé : ${eur(d.spent)}\n`;
+    return `# Synthèse Portfolio · ${team?.name}\nGénéré le ${fdate(new Date())}\n\n## Indicateurs clés\n- Jalons complétés : ${milePct} % (${d.mileDone}/${miles.rows.length})\n- Budget consommé : ${budgetPct} % (${eur(d.spent)} / ${eur(d.collected)})\n- Indice de risque global : ${d.riskIndex} / 25\n- Masse voiture A : ${gr(d.carA.total)} (marge ${d.carA.margin.toFixed(2)} g, minimum ${gr(MIN_MASS)})\n- Contreparties sponsors livrées : ${sponsorPct} %\n\n## Matrice des risques (AMDEC)\n| Risque | Pôle | G | P | Criticité | Plan B | Statut |\n|---|---|---|---|---|---|---|\n${s.risques.map((r) => `| ${r.risque} | ${r.pole} | ${r.g} | ${r.p} | ${r.criticite} | ${r.plan_b ?? ''} | ${r.statut} |`).join('\n')}\n\n## Journal d’arbitrage R&D\n${decisions.rows.map((x) => `### ${x.titre} (${fdate(x.date)}, validé par ${x.valide_par})\n- Problème : ${x.probleme}\n- Options : ${(x.options || []).join(' / ')}\n- Décision : **${x.decision}**. ${x.justif}\n- Δ traînée : ${x.delta_cx} · Δ masse : ${x.masse} · Δ coût : ${x.cout}`).join('\n\n')}\n\n## Sponsors\n${s.sponsors.map((x) => `- ${x.nom} (${x.role}) : ${pct(x.livrables.filter((l) => l.done).length, x.livrables.length)} % livré`).join('\n')}\n\n## Jalons\n${s.jalons.map((m) => `- ${m.name} : ${fdate(m.start_date)} → ${fdate(m.end_date)} · ${m.statut_effectif}`).join('\n')}\n\n## Budget\n- Collecté : ${eur(d.collected)} · Engagé : ${eur(d.spent)}\n`;
   };
 
   return (

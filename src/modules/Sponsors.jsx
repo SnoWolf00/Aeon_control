@@ -9,7 +9,7 @@ const ROLES = ['Partenaire Titre', 'Fournisseur Usinage', 'Sponsor Textile', 'Au
 export default function Sponsors() {
   const sp = useTable('sponsors', { col: 'valeur', asc: false });
   const dl = useTable('deliverables', { col: 'id', asc: true });
-  const { canWrite, isLead, logActivity } = useAuth();
+  const { canWrite, isLead, logActivity, team } = useAuth();
   const [draft, setDraft] = useState({});
   const [report, setReport] = useState(null);
   const [open, setOpen] = useState(false);
@@ -37,7 +37,7 @@ export default function Sponsors() {
 
   const text = (s) => {
     const all = items(s), d = all.filter((l) => l.done), r = all.filter((l) => !l.done);
-    return `RAPPORT PARTENAIRE · ${s.nom}\nAeon Velocity\nStatut : ${s.role} (${s.apport.toLowerCase()}, ${eur(s.valeur)})\n\nRéalisation des contreparties : ${pct(d.length, all.length)} % (${d.length} sur ${all.length})\n\nLivré\n${d.length ? d.map((l) => '  ✔ ' + l.label).join('\n') : '  Aucun livrable bouclé pour le moment.'}\n\nÀ venir\n${r.length ? r.map((l) => '  • ' + l.label).join('\n') : '  Toutes les contreparties sont honorées.'}\n\nMerci pour votre soutien : votre apport finance directement notre usinage, notre stand et notre déplacement jusqu’à la finale.\n`;
+    return `RAPPORT PARTENAIRE · ${s.nom}\n${team?.name}\nStatut : ${s.role} (${s.apport.toLowerCase()}, ${eur(s.valeur)})\n\nRéalisation des contreparties : ${pct(d.length, all.length)} % (${d.length} sur ${all.length})\n\nLivré\n${d.length ? d.map((l) => '  ✔ ' + l.label).join('\n') : '  Aucun livrable bouclé pour le moment.'}\n\nÀ venir\n${r.length ? r.map((l) => '  • ' + l.label).join('\n') : '  Toutes les contreparties sont honorées.'}\n\nMerci pour votre soutien : votre apport finance directement notre usinage, notre stand et notre déplacement jusqu’à la finale.\n`;
   };
 
   const tot = dl.rows.length, done = dl.rows.filter((l) => l.done).length;

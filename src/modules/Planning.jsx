@@ -12,13 +12,12 @@ const at = (d) => Math.min(100, Math.max(0, ((new Date(d) - R0) / (R1 - R0)) * 1
 
 export default function Planning() {
   const { rows, loading, error } = useTable('milestones', ORDER);
-  const settings = useTable('settings');
-  const { canWrite, isLead, logActivity } = useAuth();
+  const { canWrite, isLead, logActivity, team, updateFinale } = useAuth();
   const [open, setOpen] = useState(false);
   const [err, setErr] = useState(null);
   const [f, setF] = useState({ name: '', start_date: '', end_date: '' });
 
-  const finale = settings.rows.find((s) => s.key === 'finale')?.value || '2027-03-12';
+  const finale = team?.finale || '2027-03-12';
   const months = []; for (let d = new Date(R0); d <= R1; d.setMonth(d.getMonth() + 1)) months.push(new Date(d));
   const todayPct = at(new Date());
 
@@ -31,7 +30,7 @@ export default function Planning() {
     if (await run(supabase.from('milestones').insert({ ...f, statut: 'À venir' }))) { logActivity('milestone', `Jalon ajouté : ${f.name}`); setF({ name: '', start_date: '', end_date: '' }); setOpen(false); }
   };
   const remove = async (m) => { if (window.confirm(`Supprimer le jalon « ${m.name} » ?`)) run(supabase.from('milestones').delete().eq('id', m.id)); };
-  const saveFinale = (value) => value && run(supabase.from('settings').upsert({ key: 'finale', value }));
+  const saveFinale = async (value) => { if (!value) return; const e = await updateFinale(value); setErr(e ? e.message : null); };
 
   return (
     <div>

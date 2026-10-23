@@ -7,7 +7,7 @@ function Shell({ title, children }) {
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-sm p-6">
-        <div className="font-display text-3xl font-bold text-white leading-none">Aeon Velocity</div>
+        <div className="font-display text-3xl font-bold text-white leading-none">Mission Control</div>
         <div className="text-sm text-slate-400 mt-1 mb-5">{title}</div>
         {children}
       </Card>
@@ -35,7 +35,7 @@ export function Login() {
   };
 
   return (
-    <Shell title="Mission Control · connexion">
+    <Shell title="Connexion">
       <form onSubmit={submit} className="space-y-3">
         <Field label="E-mail"><input type="email" required className={inp} value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" /></Field>
         <Field label="Mot de passe"><input type="password" required className={inp} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" /></Field>
